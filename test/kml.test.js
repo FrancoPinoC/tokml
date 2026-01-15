@@ -46,6 +46,7 @@ test('tokml', function(t) {
 
     t.test('quirks', function(tt) {
         geq(tt, 'cdata');
+        geq(tt, 'actual-cdata');
         geq(tt, 'singlefeature');
         geq(tt, 'singlegeometry');
         geq(tt, 'unknown');

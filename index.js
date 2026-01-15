@@ -239,11 +239,25 @@ function extendeddata(_) {
   return tag('ExtendedData', {}, pairs(_).map(data).join(''))
 }
 
+/**
+ * Processes the value of, well, a Value tag.
+ * WARNING: This does not parse or strip the HTML of anything, which might have security implications due to possible script tags.
+ *   Make sure you tightly control what goes into your cdata values.
+ * @param {string|object} val Normally a string, but if it's an object of
+ *   shape { @type: 'html', value: 'some html string' }, it creates a CDATA value.
+ * @returns 
+ */
+function processDataValue(val) {
+  return val && typeof val === 'object' && val['@type'] === 'html' ?
+    `<![CDATA[${val.value?.replaceAll(']]>', ']]]]><![CDATA[>') ?? ''}]]>`
+    : esc(val ? val.toString() : '');
+}
+
 function data(_) {
   return tag(
     'Data',
     { name: _[0] },
-    tag('value', {}, esc(_[1] ? _[1].toString() : ''))
+    tag('value', {}, processDataValue(_[1]))
   )
 }
 
