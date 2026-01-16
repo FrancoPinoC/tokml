@@ -241,16 +241,25 @@ function extendeddata(_) {
 
 /**
  * Processes the value of, well, a Value tag.
- * WARNING: This does not parse or strip the HTML of anything, which might have security implications due to possible script tags.
- *   Make sure you tightly control what goes into your cdata values.
+ * WARNING: In case of CDATA, this does not parse or strip the HTML of anything, which might have security implications
+ *   due to possible script tags. Make sure you tightly control what goes into your cdata values.
  * @param {string|object} val Normally a string, but if it's an object of
  *   shape { @type: 'html', value: 'some html string' }, it creates a CDATA value.
- * @returns 
+ * @returns Parsed value. If the value was an object indicating the value is html, or if the text contains < or > characters, the value
+ *   is wrapped within a CDATA, and in the second case, characters are escaped as normal.
  */
 function processDataValue(val) {
-  return val && typeof val === 'object' && val['@type'] === 'html' ?
-    `<![CDATA[${val.value?.replaceAll(']]>', ']]]]><![CDATA[>') ?? ''}]]>`
-    : esc(val ? val.toString() : '');
+  if (val && typeof val === 'object' && val['@type'] === 'html') {
+    return `<![CDATA[${val.value?.replaceAll(']]>', ']]]]><![CDATA[>') ?? ''}]]>`;
+  }
+
+  const escapedVal = esc(val ? val.toString() : '');
+  // This is necessary so that Google Earth can correctly display the text. Otherwise, if it finds "&lt;*&gt;"" in text, it will *still*
+  // try to turn them into HTML tags, for some reason (probably some bug that happens when it tries to put the values in the HTML tables
+  // it uses to display data).
+  return (typeof val === 'string' && val.includes('>') && val.includes('<')) ?
+    `<![CDATA[${escapedVal}]]>` // no need for the previous replaceAll, since esc() already took care of the real '>' characters
+    : escapedVal;
 }
 
 function data(_) {
