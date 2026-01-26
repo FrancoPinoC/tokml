@@ -136,7 +136,7 @@ Which will result in the following KML:
 <?xml version="1.0" encoding="UTF-8"?><kml xmlns="http://www.opengis.net/kml/2.2"><Document><Placemark><ExtendedData><Data name="prop0"><value><![CDATA[<h1>test</h1>]]></value></Data><Data name="prop1"><value>Normal string</value></Data></ExtendedData><Point><coordinates>100,0</coordinates></Point></Placemark></Document></kml>
 ```
 
-Furthermore, for the purposes of displaying correctly within Google Earth, normal string values which contain both `<` and `>` will also be marked as CDATA sections, except in this case special characters *will* be escaped.
+Furthermore, for the purposes of displaying correctly within Google Earth, normal string values which contain either `<` or `>` will also be marked as CDATA sections, except in this case special characters *will* be escaped.
 
 ## Development
 
