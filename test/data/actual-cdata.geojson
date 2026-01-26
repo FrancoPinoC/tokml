@@ -6,10 +6,8 @@
       "coordinates": [100.0, 0.0]
     },
     "properties": {
-      "prop0": "<h1>test</h1>",
-      "<h1>prop1</h1>": "val2",
-      "prop2": "2 < 3",
-      "prop3": "3 > 2"
+      "prop0": { "@type": "html", "value": "<h1>test</h1>" },
+      "prop1": "Normal string"
     }
   }]
 }

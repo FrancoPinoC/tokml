@@ -1,0 +1,1 @@
+<?xml version="1.0" encoding="UTF-8"?><kml xmlns="http://www.opengis.net/kml/2.2"><Document><Placemark><ExtendedData><Data name="prop0"><value><![CDATA[<h1>test</h1>]]></value></Data><Data name="prop1"><value>Normal string</value></Data></ExtendedData><Point><coordinates>100,0</coordinates></Point></Placemark></Document></kml>

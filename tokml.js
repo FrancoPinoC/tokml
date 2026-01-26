@@ -3,7 +3,7 @@ var esc = require('./lib/xml-escape')
 var strxml = require('./lib/strxml'),
   tag = strxml.tag
 
-module.exports = function tokml(geojson, options) {
+module.exports = function tokml(geojsonOrFolder, options) {
   options = options || {
     documentName: undefined,
     documentDescription: undefined,
@@ -22,7 +22,7 @@ module.exports = function tokml(geojson, options) {
         'Document',
         documentName(options) +
           documentDescription(options) +
-          root(geojson, options)
+          root(geojsonOrFolder, options)
       )
     )
   )
@@ -84,6 +84,14 @@ function root(_, options) {
   var styleHashesArray = []
 
   switch (_.type) {
+    case 'Folders':
+      return _.folders.map(f => root(f, options)).join('');
+    case 'Folder':
+      return tag('Folder',
+        tag('name', _.name) +
+        (_.description ? tag('description', _.description) : '') +
+        root(_.geojson, options),
+      );
     case 'FeatureCollection':
       if (!_.features) return ''
       return _.features.map(feature(options, styleHashesArray)).join('')

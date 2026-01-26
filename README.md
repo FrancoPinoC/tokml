@@ -63,7 +63,7 @@ var kmlDocumentName = tokml(geojsonObject, {
 
 ## API
 
-### `tokml(geojsonObject, [options])`
+### `tokml(geojsonObjectOrFolder, [options])`
 
 Given [GeoJSON](http://geojson.org/) data as an object, return KML data as a
 string of XML.
@@ -95,6 +95,48 @@ for the full document.
 **[simplestyle-spec](https://github.com/mapbox/simplestyle-spec)** support:
 
 - `simplestyle`: set to `true` to convert simplestyle-spec styles into KML styles
+
+**Using folders**: If you want have folders in you KML, you can give a object like this:
+```
+{
+  type: 'Folders',
+  folders: [
+    {
+      type: 'Folder',
+      name: '<folder name>',
+      description: '<folder description>',
+      geojson: <GeoJSON>
+    },
+    ...
+  ]
+}
+```
+
+**Adding CDATA properties**: You can indicate that some of the properties of your GeoJSON are meant to be put in the KML as CDATA by making the property's value an object of this format: `{ "@type": "html", value: "value that will become CDATA" }` (like what https://github.com/placemark/tokml/ does). This will simply make it so that your value is written as a CDATA section. Note that, in this case, special characters within the value ***are not escaped***, so consider the possibilty and implications of unescaped script tags when using CDATA.
+
+An example of a GeoJSON with CDATA is as follows:
+```json
+{ "type": "FeatureCollection",
+  "features": [{
+    "type": "Feature",
+    "geometry": {
+      "type": "Point",
+      "coordinates": [100.0, 0.0]
+    },
+    "properties": {
+      "prop0": { "@type": "html", "value": "<h1>test</h1>" },
+      "prop1": "Normal string"
+    }
+  }]
+}
+```
+
+Which will result in the following KML:
+```XML
+<?xml version="1.0" encoding="UTF-8"?><kml xmlns="http://www.opengis.net/kml/2.2"><Document><Placemark><ExtendedData><Data name="prop0"><value><![CDATA[<h1>test</h1>]]></value></Data><Data name="prop1"><value>Normal string</value></Data></ExtendedData><Point><coordinates>100,0</coordinates></Point></Placemark></Document></kml>
+```
+
+Furthermore, for the purposes of displaying correctly within Google Earth, normal string values which contain either `<` or `>` will also be marked as CDATA sections, except in this case special characters *will* be escaped.
 
 ## Development
 

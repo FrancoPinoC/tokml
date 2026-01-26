@@ -2,7 +2,7 @@ var esc = require('./lib/xml-escape')
 var strxml = require('./lib/strxml'),
   tag = strxml.tag
 
-module.exports = function tokml(geojson, options) {
+module.exports = function tokml(geojsonOrFolder, options) {
   options = options || {
     documentName: undefined,
     documentDescription: undefined,
@@ -21,7 +21,7 @@ module.exports = function tokml(geojson, options) {
         'Document',
         documentName(options) +
           documentDescription(options) +
-          root(geojson, options)
+          root(geojsonOrFolder, options)
       )
     )
   )
@@ -83,6 +83,14 @@ function root(_, options) {
   var styleHashesArray = []
 
   switch (_.type) {
+    case 'Folders':
+      return _.folders.map(f => root(f, options)).join('');
+    case 'Folder':
+      return tag('Folder',
+        tag('name', _.name) +
+        (_.description ? tag('description', _.description) : '') +
+        root(_.geojson, options),
+      );
     case 'FeatureCollection':
       if (!_.features) return ''
       return _.features.map(feature(options, styleHashesArray)).join('')
@@ -231,11 +239,26 @@ function extendeddata(_) {
   return tag('ExtendedData', {}, pairs(_).map(data).join(''))
 }
 
+/**
+ * Processes the value of, well, a Value tag.
+ * WARNING: In case of CDATA, this does not parse or strip the HTML of anything, which might have security implications
+ *   due to possible script tags. Make sure you tightly control what goes into your cdata values.
+ * @param {string|object} val Normally a string, but if it's an object of
+ *   shape { @type: 'html', value: 'some html string' }, it creates a CDATA value.
+ * @returns Parsed value. If the value was an object indicating the value is html, or if the text contains < or > characters, the value
+ *   is wrapped within a CDATA, and in the second case, characters are escaped (but using hex codes instead of entity names).
+ */
+function processDataValue(val) {
+  return val && typeof val === 'object' && val['@type'] === 'html' ?
+    `<![CDATA[${val.value?.replaceAll(']]>', ']]]]><![CDATA[>') ?? ''}]]>`
+    : esc(val ? val.toString() : '');
+}
+
 function data(_) {
   return tag(
     'Data',
     { name: _[0] },
-    tag('value', {}, esc(_[1] ? _[1].toString() : ''))
+    tag('value', {}, processDataValue(_[1]))
   )
 }
 
